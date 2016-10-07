@@ -1,0 +1,355 @@
+﻿<!--
+
+/****************************************
+ * 	VERSION	: v.20161006
+ * 	DATE	: 2016-10-06
+ *
+ * 	Copyright (C) 201x (return#gmail.com) 
+ *
+ *	This is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the 
+ *	Free Software Foundation, either version 2 of the License, or(at your option) any later version.
+ *	
+ * 	This is distributed in the hope that it will be useful,but WITHOUT ANY WARRANTY;  without even the implied warranty of MERCHANTABILITY      
+ *	or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. 
+ *
+ *	You should have received a copy of the GNU General Public License along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ *
+ *****************************************/
+ 
+-->
+<html>
+<HTA:APPLICATION ID="oHTA" CONTEXTMENU="yes" INNERBORDER="no" NAVIGABLE="yes" SCROLL="no" />
+
+<head>
+    <title>KS Helper</title>
+    <style type="text/css">
+    html{ width:1100px;}
+    body {
+        background: #ffffff;
+        margin: 0;
+        color: #6c6c6c;
+        font-family: "microsoft yahei", simhei;
+        font-size: 12px;
+    }
+    
+    ul,
+    ol,
+    li,
+    dl,
+    dd,
+    dt,
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    form,
+    input {
+        margin: 0;
+        padding: 0;
+    }
+    
+    img,
+    fieldset {
+        border: none;
+    }
+    
+    li {
+        list-style: none;
+    }
+    
+    select,
+    input,
+    img {
+        vertical-align: middle;
+    }
+    
+    select,
+    input,
+    textarea {
+        font-size: 12px;
+    }
+    
+    a {
+        color: #010101;
+        text-decoration: none;
+    }
+    
+    a:hover {
+        color: #4c7d08;
+        text-decoration: underline;
+    }
+    
+    div,
+    ul,
+    dl {
+        zoom: 1;
+    }
+    
+    div:after,
+    ul:after,
+    dl:after {
+        content: "";
+        display: block;
+        clear: both;
+        height: 0;
+        visibility: hidden;
+    }
+    
+    #foot {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        border-top: 1px solid #ddd;
+        width: 100%;
+    }
+
+    #foot div{ display:block; float:left ;padding:10px 20px;}
+
+    
+    /* 其他 */
+    #all{
+        padding:12px;overflow:auto;
+    }
+    .item {
+        position:relative;
+        height: 20px;
+        padding: 8px;
+        font-size: 11px;
+        margin-bottom: 0px;
+        border-bottom: #ececec 1px solid;
+        /*#9ed8ec*/
+        cursor: default;
+    }
+        
+    .item span {
+        width: 75px;
+        display: block;
+        float: left;
+    }
+    
+
+    .item span{ width:100px; }
+    .item span.w1 {
+        width: 60px;
+    }
+
+    .item span.w2{
+    	width: 150px; 
+    	color:#333;
+    }
+    .item span.w3{
+    	width: 120px; 
+    }
+
+    .item span .uptime{ padding-left:8px; font-size: 9px; }
+    .item span .status{ width:42px; }
+    .item span.op{
+        position:absolute;right:0;
+        text-align:right;width:150px !important;
+    }
+    .item span.op a{ padding: 5px;}
+    .item.head{
+        border-bottom: #9ed8ec 2px solid;
+    }
+
+    .pricedown {
+        background: #fae4e6;
+    }
+    
+    .availabe {
+        background: #d1f1c2;
+    }
+
+    </style>
+</head>
+
+<body>
+    <bgsound id="clock" src="" LOOP="-1" />
+    <div id="all">
+        <div class="head item">
+            <span>类型(Model)</span>
+            <span>状态(Status)</span>
+            <span class="w1">CPU</span>
+            <!--
+            <span class="w3">核心(Cores/Threads)</span>
+            <span>主频(Freq.)</span>
+            -->
+            <span>内存(RAM)</span>
+            <span>磁盘(Disk)</span>
+            <span class="w3">网络(Network)</span>
+            <span class="w1">IPv6</span>
+            <span class="w3">价格(Price/month)</span>
+        </div>
+    </div>
+
+    <div id="foot">
+        <div class="models"></div>
+
+        <div class="tick">
+            <span>刷新时间 </span>
+            <select class="set_update">
+                <option value='0'>立即</option>
+                <option value='1000'>1秒</option>
+                <option value='5000' selected>5秒</option>
+                <option value='10000'>10秒</option>
+            </select>
+        </div>
+
+        <div class="help"><a href="#">帮助</a></div>
+
+    </div>
+    <script type="text/javascript" src='http://libs.baidu.com/jquery/1.4.4/jquery.min.js'></script>
+    <script type="text/javascript" src='lib/kimsufi.js'></script>
+    <script type="text/javascript">  
+        $(function() {
+            var console = window.console || {
+                'log': function() {}
+            }
+
+            var cookie = function(name, value, options) {
+                if (typeof value != 'undefined') { // name and value given, set cookie
+                    options = options || {};
+                    if (value === null) {
+                        value = '';
+                        options.expires = -1;
+                    }
+                    var expires = '';
+                    if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+                        var date;
+                        if (typeof options.expires == 'number') {
+                            date = new Date();
+                            date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+                        } else {
+                            date = options.expires;
+                        }
+                        expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+                    }
+                    // CAUTION: Needed to parenthesize options.path and options.domain
+                    // in the following expressions, otherwise they evaluate to undefined
+                    // in the packed version for some reason...
+                    var path = options.path ? '; path=' + (options.path) : '';
+                    var domain = options.domain ? '; domain=' + (options.domain) : '';
+                    var secure = options.secure ? '; secure' : '';
+                    document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+                } else { // only name given, get cookie
+                    var cookieValue = null;
+                    if (document.cookie && document.cookie != '') {
+                        var cookies = document.cookie.split(';');
+                        for (var i = 0; i < cookies.length; i++) {
+                            var cookie = jQuery.trim(cookies[i]);
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+            };
+
+            function template(str, data) {
+                return str.replace(/\{ *([\w_]+) *\}/g, function(str, key) {
+                    var value = data[key];
+                    if (value === undefined) {
+                        console.log('No value provided for variable ' + str);
+                        value = "{" + key + "}";
+                    } else if (typeof value === 'function') {
+                        value = value(data);
+                    }
+                    return value;
+                })
+            };
+
+            function create_layout(app) {
+                var tpl = "<option value ='{id}'>{title}</option>",
+                    s = "";
+                var list = kimsufi.models;
+                for (var i = 0; i < list.length; i++) {
+                    s += template(tpl, list[i]);
+                }
+
+                s = "添加&nbsp;<select>" + s + "</select>";
+                $("#foot .models").append(s).find("select").change(function() {
+                    app.add($(this).val());
+                });
+
+
+                $('#foot .help a').click(function() {
+                    alert('提示: 本程序只做学习探讨之用。\r\n reruin@gmail.com')
+                });
+
+                $("#foot .tick select").change(function() {
+                    app.setTick($(this).val());
+                });
+
+                window.remove = function(id){
+                    if(window.confirm('确定删除？')){
+                        app.remove(id);
+                    }
+                }
+
+                window.order = function(id){
+                    window.clipboardData.setData("Text", kimsufi.getOrderUrl(id));
+                    alert('购买地址已复制');
+                }
+            }
+
+            function notify(){
+                if($('#all').find('.availabe input:checked').length == 0){
+                    $('#clock').attr('src','');
+                }else{
+                    if(!$('#clock').attr('src'))
+                        $('#clock').attr('src','http://www.2345.com/i/mid/10.mid');
+                }
+            }
+            function start() {
+                var tpl = '<div class="item item{first}" id="item_{id}" rel="{m}">' +
+                    '<span>{title}</span>' +
+                    '<span class="w2">' +
+                    '<span class="status">{status_str}</span>' +
+                    '<span class="uptime"></span>' +
+                    '</span>' +
+                    '<span></span><span class="op"><label><input type="checkbox" checked />提醒</label><a href="https://www.kimsufi.com/en/order/kimsufi.cgi?hard={id}" target="_blank" onclick="order( \'{id}\' );">下单</a><a href="#" onclick="remove( \'{id}\' );">移除</a></span>' +
+                    '</div>';
+
+
+                var app = kimsufi();
+
+                app
+                    .on('add', function(data) {
+                        $('#all').append(template(tpl, data));
+                        cookie('models', app.getModels().join(';'), { 'expires': 365 });
+                    })
+                    .on('remove' , function(data){
+                        var id = data.id;
+                        $('#item_'+id).remove();
+                        cookie('models', app.getModels().join(';'), { 'expires': 365 });
+                        notify();
+                    })
+                    .on('update', function(data) {
+                        for (var i in data) {
+                            var el = $('#item_' + data[i].id);
+                            if (el) {
+                                el.find('.uptime').html(data[i].uptime + '秒前');
+                                el.find('.status').html(data[i].status_str);
+                                el.toggleClass('availabe', data[i].status === true);
+                            }
+                        }
+                        notify();
+                    })
+
+                    .add(cookie('models') ? cookie('models').split(';') : ['162sk32', '162sk42']);
+
+                create_layout(app);
+            }
+
+            start();
+        });
+</script>
+</body>
+
+</html>
